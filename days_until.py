@@ -69,31 +69,48 @@ def print_notification(msg):
 # Per-Event Logic
 #################
 
-def show_progress_chart(start_date, end_date):
-    """Displays the progress chart for an entry"""
-    today = date.today()
-    total_days = calculate_days_between(start_date, end_date)
-    days_past_start = calculate_days_between(start_date, today)
-    days_remaining = total_days - days_past_start
-    percentage_complete = round((days_past_start / total_days) * 100, 1)
-    print(GREEN + BOLD + f"Current Date: {today}")
-    print(GREEN + BOLD + f"Days Remaining: {days_remaining}")
-    
+def display_progress_chart(percentage_complete):
     fill_char = "▓"
     empty_char = "▓"
+    chart_len = 20
+    chart = fill_char * round(percentage_complete * 10 / 1000)
+    print(len(chart))
+    chart += empty_char * (chart_len - len(chart))
     # TODO: Print the chart with pretty graphics
-    print(f"{percentage_complete}%\n")
+    print(f"{chart} {percentage_complete}%\n")
+
+
+def show_data_for_dates(start_date, end_date):
+    """Displays the progress chart for an entry"""
+    today = date.today()
+    try:
+        total_days = calculate_days_between(start_date, end_date)
+        days_past_start = calculate_days_between(start_date, today)
+    except ValueError:
+        print_error("Start date after end date.")
+        return
+
+    print(GREEN + BOLD + f"Current Date: {today}")
+    print(GREEN + BOLD + f"Days Remaining: {total_days - days_past_start}")
+    percentage_complete = round((days_past_start / total_days) * 100, 1)
+    display_progress_chart(percentage_complete)
 
 
 def calculate_days_between(start_date, target_date):
-    return (target_date - start_date).days
+    """Returns the number of days between start and end date. Raises ValueError if
+    the end date is before the start date."""
+    diff = (target_date - start_date).days
+    if diff < 0:
+        raise ValueError
+    else:
+        return diff
 
 
 def show_entry(entry_data):
     print_section_header(entry_data["event"], BLUE)
     start_date = datetime.strptime(entry_data["dates"]["start"], "%Y-%m-%d").date()
     end_date = datetime.strptime(entry_data["dates"]["end"], "%Y-%m-%d").date()
-    show_progress_chart(start_date, end_date)
+    show_data_for_dates(start_date, end_date)
 
 
 ######
@@ -106,7 +123,6 @@ def main():
     config_path = get_config_path()
     create_config_if_nonexistent(config_path)
     data = read_config(config_path)
-    print(data)
     if data is None:
         print_error(f"No data in config: {config_path}")
         sys.exit()
