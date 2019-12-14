@@ -1,6 +1,6 @@
 # days-until
 
-This CLI allows you to count down to upcoming events.
+This CLI helps you count down to upcoming events. Inspired by [`year-progress`](https://github.com/alichtman/scripts/blob/master/year-progress.sh).
 
 <h1 align="center">
   <img src="img/demo.png" width="50%" />
@@ -39,3 +39,4 @@ The top level keys (`event1` in this example) don't matter as long as they're un
 - `end` is the date of the event.
 
 All dates should be in `YYYY-MM-DD` format.
+

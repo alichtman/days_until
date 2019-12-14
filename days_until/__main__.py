@@ -88,7 +88,7 @@ def display_progress_chart(percentage_complete):
     print(GREEN + f"{chart} {percentage_complete}%\n")
 
 
-def show_data_for_dates(start_date, end_date):
+def show_data_for_dates(start_date, end_date, compress=False):
     """Displays the progress chart for an entry"""
     today = date.today()
     try:
@@ -100,9 +100,13 @@ def show_data_for_dates(start_date, end_date):
 
     print(WHITE + f"Start Date:          {start_date.strftime('%b %d, %Y')}")
     print(WHITE + f"Current Date:        {today.strftime('%b %d, %Y')}")
-    print(WHITE + f"End Date:            {end_date.strftime('%b %d, %Y')}\n")
+    print(WHITE + f"End Date:            {end_date.strftime('%b %d, %Y')}")
+    if not compress:
+        print()
     print(WHITE + f"Days Passed:         {days_past_start}")
-    print(WHITE + f"Days Remaining:      {total_days - days_past_start}\n")
+    print(WHITE + f"Days Remaining:      {total_days - days_past_start}")
+    if not compress:
+        print()
     percentage_complete = round((days_past_start / total_days) * 100, 1)
     display_progress_chart(percentage_complete)
 
@@ -116,12 +120,12 @@ def calculate_days_between(start_date, target_date):
     return diff
 
 
-def show_entry(entry_data):
+def show_entry(entry_data, compress):
     """Prints all data for an entry"""
     print_section_header(entry_data["event"], BLUE)
     start_date = datetime.strptime(entry_data["dates"]["start"], "%Y-%m-%d").date()
     end_date = datetime.strptime(entry_data["dates"]["end"], "%Y-%m-%d").date()
-    show_data_for_dates(start_date, end_date)
+    show_data_for_dates(start_date, end_date, compress)
 
 
 ######
@@ -134,9 +138,10 @@ def print_version_info():
 
 # custom help options
 @click.command(context_settings=dict(help_option_names=['-h', '-help', '--help']))
-@click.option('--config', '-c', is_flag=True, default=False, help="Print config path.")
+@click.option('--config', is_flag=True, default=False, help="Print config path.")
+@click.option('--compress', '-c', is_flag=True, default=False, help="Compress output when printing.")
 @click.option('--version', '-v', is_flag=True, default=False, help='Print version and author info.')
-def main(config, version):
+def main(config, compress, version):
     """Count down days until events.\n
     \tWritten by Aaron Lichtman. https://github.com/alichtman/days_until"""
     if version:
@@ -156,7 +161,7 @@ def main(config, version):
         sys.exit()
 
     for key in data:
-        show_entry(data[key])
+        show_entry(data[key], compress)
 
 
 if __name__ == "__main__":
