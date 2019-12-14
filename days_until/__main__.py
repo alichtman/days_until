@@ -45,6 +45,7 @@ def read_config(config_path):
 RED = Fore.RED
 BLUE = Fore.BLUE
 GREEN = Fore.GREEN
+WHITE = Fore.WHITE
 BOLD = Style.BRIGHT
 RESET = Style.RESET_ALL
 
@@ -70,14 +71,14 @@ def print_notification(msg):
 #################
 
 def display_progress_chart(percentage_complete):
+    """Prints a nice-looking chart filled proportionally to
+    percentage_complete."""
     fill_char = "▓"
-    empty_char = "▓"
+    empty_char = "░"
     chart_len = 20
-    chart = fill_char * round(percentage_complete * 10 / 1000)
-    print(len(chart))
+    chart = fill_char * round(percentage_complete / 100 * chart_len)
     chart += empty_char * (chart_len - len(chart))
-    # TODO: Print the chart with pretty graphics
-    print(f"{chart} {percentage_complete}%\n")
+    print(GREEN + f"{chart} {percentage_complete}%\n")
 
 
 def show_data_for_dates(start_date, end_date):
@@ -90,8 +91,9 @@ def show_data_for_dates(start_date, end_date):
         print_error("Start date after end date.")
         return
 
-    print(GREEN + BOLD + f"Current Date: {today}")
-    print(GREEN + BOLD + f"Days Remaining: {total_days - days_past_start}")
+    print(WHITE + f"Current Date:        {today.strftime('%b %d, %Y')}")
+    print(WHITE + f"End Date:            {end_date.strftime('%b %d, %Y')}")
+    print(WHITE + f"Days Remaining:      {total_days - days_past_start}")
     percentage_complete = round((days_past_start / total_days) * 100, 1)
     display_progress_chart(percentage_complete)
 
