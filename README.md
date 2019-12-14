@@ -13,6 +13,8 @@ This CLI allows you to count down to upcoming events.
 $ git clone https://github.com/alichtman/days_until.git
 $ cd days_until
 $ python3 setup.py install
+$ days-until  # The config file will be created the first time you run the program
+$ vim $(days-until --config)  # Then, edit the configuration file
 $ days-until
 ```
 

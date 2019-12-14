@@ -1,3 +1,6 @@
+# Module Imports
+from .__version__ import __version__
+
 # Standard Library Imports
 import sys
 from datetime import date, datetime
@@ -5,6 +8,7 @@ from os import environ, path
 
 # 3rd-Party Imports
 import yaml
+import click
 from colorama import Fore, Style
 
 
@@ -14,7 +18,8 @@ from colorama import Fore, Style
 
 def get_config_path():
     """Gets path to config, respecting XDG spec"""
-    xdg_config = environ.get('XDG_CONFIG_HOME') or path.join(path.expanduser('~'), '.config')
+    xdg_config = environ.get('XDG_CONFIG_HOME') or \
+        path.join(path.expanduser('~'), '.config')
     return path.join(xdg_config, "days_until.yaml")
 
 
@@ -28,9 +33,9 @@ def create_config_if_nonexistent(config_path):
 
 def read_config(config_path):
     """Reads the YAML config and returns it as a dict"""
-    with open(config_path, "r") as f:
+    with open(config_path, "r") as conf:
         try:
-            data = yaml.safe_load(f)
+            data = yaml.safe_load(conf)
         except yaml.YAMLError as exc:
             print_error("Config was unparsable. Make sure it is properly formatted.")
             print(exc)
@@ -59,10 +64,12 @@ def print_section_header(title, color):
 
 
 def print_error(msg):
+    """Prints message in bright red, prepended with 'ERROR: '"""
     print(RED + BOLD + f"ERROR: {msg}")
 
 
 def print_notification(msg):
+    """Prints message in bright green."""
     print(GREEN + BOLD + f"{msg}")
 
 
@@ -93,8 +100,9 @@ def show_data_for_dates(start_date, end_date):
 
     print(WHITE + f"Start Date:          {start_date.strftime('%b %d, %Y')}")
     print(WHITE + f"Current Date:        {today.strftime('%b %d, %Y')}")
-    print(WHITE + f"End Date:            {end_date.strftime('%b %d, %Y')}")
-    print(WHITE + f"Days Remaining:      {total_days - days_past_start}")
+    print(WHITE + f"End Date:            {end_date.strftime('%b %d, %Y')}\n")
+    print(WHITE + f"Days Passed:         {days_past_start}")
+    print(WHITE + f"Days Remaining:      {total_days - days_past_start}\n")
     percentage_complete = round((days_past_start / total_days) * 100, 1)
     display_progress_chart(percentage_complete)
 
@@ -105,11 +113,11 @@ def calculate_days_between(start_date, target_date):
     diff = (target_date - start_date).days
     if diff < 0:
         raise ValueError
-    else:
-        return diff
+    return diff
 
 
 def show_entry(entry_data):
+    """Prints all data for an entry"""
     print_section_header(entry_data["event"], BLUE)
     start_date = datetime.strptime(entry_data["dates"]["start"], "%Y-%m-%d").date()
     end_date = datetime.strptime(entry_data["dates"]["end"], "%Y-%m-%d").date()
@@ -120,11 +128,28 @@ def show_entry(entry_data):
 # Main
 ######
 
-def main():
-    """Creates config if it doesn't exist, reads the config and displays the
-    data contained in the config."""
+def print_version_info():
+    """Print version and author info."""
+    print(f"v{__version__} by Aaron Lichtman")
+
+# custom help options
+@click.command(context_settings=dict(help_option_names=['-h', '-help', '--help']))
+@click.option('--config', '-c', is_flag=True, default=False, help="Print config path.")
+@click.option('--version', '-v', is_flag=True, default=False, help='Print version and author info.')
+def main(config, version):
+    """Count down days until events.\n
+    \tWritten by Aaron Lichtman. https://github.com/alichtman/days_until"""
+    if version:
+        print_version_info()
+        sys.exit()
+
     config_path = get_config_path()
     create_config_if_nonexistent(config_path)
+
+    if config:
+        print(config_path)
+        sys.exit()
+
     data = read_config(config_path)
     if data is None:
         print_error(f"No data in config: {config_path}")

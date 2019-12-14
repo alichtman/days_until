@@ -11,6 +11,8 @@ from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
 
+from days_until.__version__ import __version__
+
 # Package meta-data.
 NAME = 'days_until'
 DESCRIPTION = 'CLI to count down days until events.'
@@ -18,11 +20,11 @@ URL = 'https://github.com/alichtman/days_until'
 EMAIL = 'aaronlichtman@gmail.com'
 AUTHOR = 'Aaron Lichtman'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.1'
+VERSION = __version__
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'colorama', 'pyyaml',
+    'colorama', 'pyyaml', 'click'
 ]
 
 # What packages are optional?
