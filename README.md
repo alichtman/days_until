@@ -20,7 +20,7 @@ $ days-until
 
 `days-until` reads its configuration from `$XDG_CONFIG_HOME/.config/days-until.yaml` or `~/.config/days_until.yaml`.
 
-Each event should be in this format. The top level keys doesn't matter as long as they are unique. I tend to use `event{N}`, but whatever you'd like to use works.
+Each event should be in the following format.
 
 ```yaml
 event1:
@@ -30,8 +30,10 @@ event1:
     end: "2019-12-20"
 ```
 
-`event` is a string name for the event.
-`start` is the date on from which you'd like progress to be tracked.
-`end` is the date of the event.
+The top level keys (`event1` in this example) don't matter as long as they're unique. I tend to use `event{N}`, but anything will work.
+
+- `event` is a string name for the event.
+- `start` is the date on from which you'd like progress to be tracked.
+- `end` is the date of the event.
 
 All dates should be in `YYYY-MM-DD` format.
