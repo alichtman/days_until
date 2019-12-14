@@ -91,6 +91,7 @@ def show_data_for_dates(start_date, end_date):
         print_error("Start date after end date.")
         return
 
+    print(WHITE + f"Start Date:          {start_date.strftime('%b %d, %Y')}")
     print(WHITE + f"Current Date:        {today.strftime('%b %d, %Y')}")
     print(WHITE + f"End Date:            {end_date.strftime('%b %d, %Y')}")
     print(WHITE + f"Days Remaining:      {total_days - days_past_start}")
