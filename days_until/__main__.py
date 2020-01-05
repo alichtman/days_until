@@ -50,6 +50,7 @@ def read_config(config_path):
 RED = Fore.RED
 BLUE = Fore.BLUE
 GREEN = Fore.GREEN
+YELLOW = Fore.YELLOW
 WHITE = Fore.WHITE
 BOLD = Style.BRIGHT
 RESET = Style.RESET_ALL
@@ -83,9 +84,14 @@ def display_progress_chart(percentage_complete):
     fill_char = "▓"
     empty_char = "░"
     chart_len = 20
-    chart = fill_char * round(percentage_complete / 100 * chart_len)
-    chart += empty_char * (chart_len - len(chart))
-    print(GREEN + f"{chart} {percentage_complete}%\n")
+
+    if percentage_complete >= 100:
+        chart = fill_char * chart_len
+        print(RED + f"{chart} COMPLETE\n")
+    else:
+        chart = fill_char * round(percentage_complete / 100 * chart_len)
+        chart += empty_char * (chart_len - len(chart))
+        print(GREEN + f"{chart} {percentage_complete}%\n")
 
 
 def show_data_for_dates(start_date, end_date, compress=False):
@@ -103,8 +109,17 @@ def show_data_for_dates(start_date, end_date, compress=False):
     print(WHITE + f"End Date:            {end_date.strftime('%b %d, %Y')}")
     if not compress:
         print()
+
+    # Show how close we are to the deadline with color
+    days_remaining = total_days - days_past_start
+    if days_remaining <= 0:
+        days_remaining = RED + "None"
+    elif days_remaining <= 10:
+        days_remaining = YELLOW + str(days_remaining)
+
     print(WHITE + f"Days Passed:         {days_past_start}")
-    print(WHITE + f"Days Remaining:      {total_days - days_past_start}")
+    print(WHITE + f"Days Remaining:      {days_remaining}")
+
     if not compress:
         print()
     percentage_complete = round((days_past_start / total_days) * 100, 1)
