@@ -1,6 +1,3 @@
-# Module Imports
-from .__version__ import __version__
-
 # Standard Library Imports
 import sys
 from datetime import date, datetime
@@ -10,6 +7,9 @@ from os import environ, path
 import yaml
 import click
 from colorama import Fore, Style
+
+# Module Imports
+from .__version__ import __version__
 
 
 ########
@@ -43,6 +43,12 @@ def read_config(config_path):
     return data
 
 
+def write_config(config_path, data):
+    """Writes data to config_path in YAML format"""
+    with open(config_path, "w") as conf:
+        yaml.dump(data, conf)
+
+
 ##########
 # Printing
 ##########
@@ -66,12 +72,68 @@ def print_section_header(title, color):
 
 def print_error(msg):
     """Prints message in bright red, prepended with 'ERROR: '"""
-    print(RED + BOLD + f"ERROR: {msg}")
+    print(RED + BOLD + f"ERROR: {msg}" + RESET)
 
 
 def print_notification(msg):
     """Prints message in bright green."""
-    print(GREEN + BOLD + f"{msg}")
+    print(GREEN + BOLD + f"{msg}" + RESET)
+
+
+def print_blue_bold(msg):
+    """Prints message in bright blue"""
+    print(BLUE + BOLD + f"{msg}" + RESET)
+
+
+###########
+# Prompting
+###########
+
+def prompt_yes_no(question):
+    """Prompt user for a yes/no answer. Returns True if 'y' is input, otherwise returns False."""
+    question = f"{question.strip()} {WHITE} [y/N] "
+    return input(question).strip().casefold() == "y"
+
+
+def remove_entries_prompt(config_path, data):
+    """
+    Interactively remove entries that are past the end date. Writes the update
+    config to config_path.
+    :param config_path: Path to config file
+    :param data: Current config data
+    """
+    if not data:
+        print_error("No entries in config.")
+        sys.exit()
+
+    new_config = {}
+    events_to_remove = []
+    for key in data.keys():
+        try:
+            end_date = datetime.strptime(data[key]["dates"]["end"], "%Y-%m-%d")
+            if calculate_days_between(end_date.date(), date.today()) >= 0:
+                if prompt_yes_no(RED + f"Remove: {data[key]['event']}?"):
+                    events_to_remove.append(data[key]['event'])
+                else:
+                    new_config[key] = data[key]
+        except ValueError:
+            continue
+
+    if not events_to_remove:
+        print_notification("No entries modified.")
+        sys.exit()
+
+    number_of_events_to_remove = len(events_to_remove)
+    if number_of_events_to_remove == 1:
+        question = "Remove 1 entry?"
+    else:
+        question = f"Remove {number_of_events_to_remove} entries?"
+
+    for name in events_to_remove:
+        print_blue_bold(f"[ {name} ]")
+
+    if prompt_yes_no(RED + BOLD + question):
+        write_config(config_path, new_config)
 
 
 #################
@@ -117,7 +179,7 @@ def show_data_for_dates(start_date, end_date, compress=False):
     elif days_remaining <= 10:
         days_remaining = YELLOW + str(days_remaining)
 
-    print(WHITE + f"Days Passed:         {days_past_start}")
+    print(WHITE + f"Days Since Start:    {days_past_start}")
     print(WHITE + f"Days Remaining:      {days_remaining}")
 
     if not compress:
@@ -153,10 +215,11 @@ def print_version_info():
 
 # custom help options
 @click.command(context_settings=dict(help_option_names=['-h', '-help', '--help']))
-@click.option('--config', is_flag=True, default=False, help="Print config path.")
-@click.option('--compress', '-c', is_flag=True, default=False, help="Compress output when printing.")
-@click.option('--version', '-v', is_flag=True, default=False, help='Print version and author info.')
-def main(config, compress, version):
+@click.option('--compress', is_flag=True, help="Compress output when printing.")
+@click.option('--config', is_flag=True, help="Print path to config file.")
+@click.option('--remove', is_flag=True, help="Interactively remove events with end dates that have passed.")
+@click.option('--version', '-v', is_flag=True, help='Print version and author info.')
+def main(compress=False, config=False, remove=False, version=False):
     """Count down days until events.\n
     \tWritten by Aaron Lichtman. https://github.com/alichtman/days_until"""
     if version:
@@ -173,6 +236,10 @@ def main(config, compress, version):
     data = read_config(config_path)
     if data is None:
         print_error(f"No data in config: {config_path}")
+        sys.exit()
+
+    if remove:
+        remove_entries_prompt(config_path, data)
         sys.exit()
 
     for key in data:

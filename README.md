@@ -18,7 +18,25 @@ $ vim $(days-until --config)  # Then, edit the configuration file
 $ days-until
 ```
 
-## Configuration
+## Options
+
+```bash
+$ days_until -h
+Usage: days_until [OPTIONS]
+
+  Count down days until events.
+  Written by Aaron Lichtman. https://github.com/alichtman/days_until
+
+Options:
+  -c, --compress     Compress output when printing.
+  --config           Print path to config file.
+  --remove           Interactively remove events with end dates that have
+                     passed.
+  -v, --version      Print version and author info.
+  -h, -help, --help  Show this message and exit.
+```
+
+## Configuration and Events
 
 `days-until` reads its configuration from `$XDG_CONFIG_HOME/.config/days-until.yaml` or `~/.config/days_until.yaml`.
 
@@ -39,4 +57,6 @@ The top level keys (`event1` in this example) don't matter as long as they're un
 - `end` is the date of the event.
 
 All dates should be in `YYYY-MM-DD` format.
+
+To remove entries interactively, use the `--remove` option. 
 
