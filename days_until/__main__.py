@@ -123,17 +123,22 @@ def remove_entries_prompt(config_path, data):
         print_notification("No entries modified.")
         sys.exit()
 
+    print()
+    for name in events_to_remove:
+        print_blue_bold(f"[ {name} ]")
+    print()
+
     number_of_events_to_remove = len(events_to_remove)
     if number_of_events_to_remove == 1:
         question = "Remove 1 entry?"
     else:
         question = f"Remove {number_of_events_to_remove} entries?"
 
-    for name in events_to_remove:
-        print_blue_bold(f"[ {name} ]")
-
     if prompt_yes_no(RED + BOLD + question):
         write_config(config_path, new_config)
+        print_notification("Successfully removed.")
+    else:
+        print_notification("Aborted.")
 
 
 #################
