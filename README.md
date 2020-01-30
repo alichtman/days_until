@@ -39,7 +39,7 @@ Options:
 
 `days-until` reads its configuration from `$XDG_CONFIG_HOME/.config/days-until.yaml` or `~/.config/days_until.yaml`.
 
-Each event should be in the following format.
+The easiest way to add events is with the `--add` option. If you'd like to add the events manually, they should be in the following format:
 
 ```yaml
 event1:
