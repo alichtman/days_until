@@ -7,18 +7,17 @@ This CLI helps you count down to upcoming events. Inspired by [`year-progress`](
   <br />
 </h1>
 
-## Installation
+## Installation and Usage
 
 ```bash
 $ git clone https://github.com/alichtman/days_until.git
 $ cd days_until
 $ python3 setup.py install
-$ days-until  # The config file will be created the first time you run the program
-$ vim $(days-until --config)  # Then, edit the configuration file
+$ days-until --add  # The config file will be created the first time you run the program
 $ days-until
 ```
 
-## Options
+### Options
 
 ```bash
 $ days-until [OPTIONS]
