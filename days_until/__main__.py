@@ -1,5 +1,6 @@
 # Standard Library Imports
 import sys
+import uuid
 from datetime import date, datetime
 from os import environ, path
 
@@ -95,34 +96,33 @@ def prompt_yes_no(question):
     return input(question).strip().casefold() == "y"
 
 
-def remove_entries_prompt(config_path, data):
+def prompt_null_invalid(question):
+    """Prompt user with a question. Returns the string that's entered if
+    it's not None. Otherwise, prompts again.
     """
-    Interactively remove entries that are past the end date. Writes the update
-    config to config_path.
-    :param config_path: Path to config file
-    :param data: Current config data
+    question = f"{question.strip()}{WHITE}: "
+    answer = input(question).strip()
+    while answer == "":
+        print_error("Input is required.")
+        answer = prompt_null_invalid(question)
+    return answer
+
+
+def prompt_null_valid(question):
+    """Prompt user with a question and return the string that's entered.
     """
-    if not data:
-        print_error("No entries in config.")
-        sys.exit()
+    question = f"{question.strip()}{WHITE}: "
+    return input(question).strip()
 
-    new_config = {}
-    events_to_remove = []
-    for key in data.keys():
-        try:
-            end_date = datetime.strptime(data[key]["dates"]["end"], "%Y-%m-%d")
-            if calculate_days_between(end_date.date(), date.today()) >= 0:
-                if prompt_yes_no(RED + f"Remove: {data[key]['event']}?"):
-                    events_to_remove.append(data[key]['event'])
-                else:
-                    new_config[key] = data[key]
-        except ValueError:
-            continue
 
-    if not events_to_remove:
-        print_notification("No entries modified.")
-        sys.exit()
+##################
+# Removing Entries
+##################
 
+def removal_confirmation_and_update(config_path, new_config, events_to_remove):
+    """Prompt user for confirmation to remove events_to_remove from the config.
+    If confirmed, update config. Otherwise, don't. Print update messages.
+    """
     print()
     for name in events_to_remove:
         print_blue_bold(f"[ {name} ]")
@@ -139,6 +139,94 @@ def remove_entries_prompt(config_path, data):
         print_notification("Successfully removed.")
     else:
         print_notification("Aborted.")
+
+
+def remove_entries_prompt(config_path, data):
+    """
+    Interactively remove entries. Writes the update config to config_path.
+    :param config_path: Path to config file
+    :param data: Current config data
+    """
+    if not data:
+        print_error("No entries in config.")
+        sys.exit()
+
+    new_config = {}
+    events_to_remove = []
+    for key in data.keys():
+        try:
+            if prompt_yes_no(RED + f"Remove: {data[key]['event']}?"):
+                events_to_remove.append(data[key]['event'])
+            else:
+                new_config[key] = data[key]
+        except ValueError:
+            continue
+
+    if not events_to_remove:
+        print_notification("No entries modified.")
+        sys.exit()
+
+    removal_confirmation_and_update(config_path, new_config, events_to_remove)
+
+
+def clean_passed_entries(config_path, data):
+    """
+    Remove entries with end dates that have passed. Writes the update config
+    to config_path.
+    :param config_path: Path to config file
+    :param data: Current config data
+    """
+    if not data:
+        print_error("No entries in config.")
+        sys.exit()
+
+    new_config = {}
+    events_to_remove = []
+    for key in data.keys():
+        try:
+            end_date = datetime.strptime(data[key]["dates"]["end"], "%Y-%m-%d")
+            if calculate_days_between(end_date.date(), date.today()) >= 0:
+                events_to_remove.append(data[key]['event'])
+            else:
+                new_config[key] = data[key]
+        except ValueError:
+            continue
+
+    if not events_to_remove:
+        print_notification("No entries modified.")
+        sys.exit()
+
+    removal_confirmation_and_update(config_path, new_config, events_to_remove)
+
+
+################
+# Adding Entries
+################
+
+def add_entry(config_path, config_data):
+    """Prompts a user for new event data. Assigns a random id for the event
+    name, and writes it to the config_data.
+    """
+    event_name = prompt_null_invalid("Enter an event name")
+    # TODO: Add date formatting validation.
+    start_date = prompt_null_valid("Enter a start date (in YYYY-MM-DD format) or hit enter to default to today")
+    if start_date == "":
+        start_date = datetime.strftime(datetime.today(), "%Y-%m-%d")
+    end_date = prompt_null_invalid("Enter an end date (in YYYY-MM-DD format)")
+
+    # Generate unique id for the new event being added.
+    unique_id = uuid.uuid4()
+    while unique_id in config_data.keys():
+        unique_id = uuid.uuid4()
+
+    config_data[str(uuid.uuid4())] = {"event": event_name,
+                                      "dates": {
+                                          "start": start_date,
+                                          "end": end_date
+                                      },
+                                      }
+    write_config(config_path, config_data)
+    print_notification(f"Successfully added event [ {event_name} ]")
 
 
 #################
@@ -220,11 +308,13 @@ def print_version_info():
 
 # custom help options
 @click.command(context_settings=dict(help_option_names=['-h', '-help', '--help']))
+@click.option('--add', is_flag=True, help="Prompt to add events.")
+@click.option('--clean', is_flag=True, help="Remove events with end dates that have passed.")
 @click.option('--compress', is_flag=True, help="Compress output when printing.")
 @click.option('--config', is_flag=True, help="Print path to config file.")
-@click.option('--remove', is_flag=True, help="Interactively remove events with end dates that have passed.")
+@click.option('--remove', is_flag=True, help="Interactively remove events.")
 @click.option('--version', '-v', is_flag=True, help='Print version and author info.')
-def main(compress=False, config=False, remove=False, version=False):
+def main(add=False, clean=False, compress=False, config=False, remove=False, version=False):
     """Count down days until events.\n
     \tWritten by Aaron Lichtman. https://github.com/alichtman/days_until"""
     if version:
@@ -243,10 +333,19 @@ def main(compress=False, config=False, remove=False, version=False):
         print_error(f"No data in config: {config_path}")
         sys.exit()
 
+    if add:
+        add_entry(config_path, data)
+        sys.exit()
+
     if remove:
         remove_entries_prompt(config_path, data)
         sys.exit()
 
+    if clean:
+        clean_passed_entries(config_path, data)
+        sys.exit()
+
+    # Normal display mode
     for key in data:
         show_entry(data[key], compress)
 

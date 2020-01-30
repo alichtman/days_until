@@ -21,17 +21,17 @@ $ days-until
 ## Options
 
 ```bash
-$ days_until -h
-Usage: days_until [OPTIONS]
+$ days-until [OPTIONS]
 
   Count down days until events.
   Written by Aaron Lichtman. https://github.com/alichtman/days_until
 
 Options:
-  -c, --compress     Compress output when printing.
+  --add              Prompt to add events.
+  --clean            Remove events with end dates that have passed.
+  --compress         Compress output when printing.
   --config           Print path to config file.
-  --remove           Interactively remove events with end dates that have
-                     passed.
+  --remove           Interactively remove events.
   -v, --version      Print version and author info.
   -h, -help, --help  Show this message and exit.
 ```
