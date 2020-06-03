@@ -10,9 +10,7 @@ This CLI helps you count down to upcoming events. Inspired by [`year-progress`](
 ## Installation and Usage
 
 ```bash
-$ git clone https://github.com/alichtman/days_until.git
-$ cd days_until
-$ python3 setup.py install
+$ pip3 install days-until
 $ days-until --add  # The config file will be created the first time you run the program
 $ days-until
 ```
@@ -57,5 +55,4 @@ The top level keys (`event1` in this example) don't matter as long as they're un
 
 All dates should be in `YYYY-MM-DD` format.
 
-To remove entries interactively, use the `--remove` option. 
-
+To remove entries interactively, use the `--remove` option.
