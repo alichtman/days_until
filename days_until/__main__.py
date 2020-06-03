@@ -329,12 +329,13 @@ def main(add=False, clean=False, compress=False, config=False, remove=False, ver
         sys.exit()
 
     data = read_config(config_path)
-    if data is None:
-        print_error(f"No data in config: {config_path}")
-        sys.exit()
 
     if add:
         add_entry(config_path, data)
+        sys.exit()
+
+    if data is None:
+        print_error(f"No data in config: {config_path}")
         sys.exit()
 
     if remove:
